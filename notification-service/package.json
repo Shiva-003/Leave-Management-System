@@ -1,0 +1,12 @@
+{
+  "name": "notification-service",
+  "version": "1.0.0",
+  "description": "Async notification consumer - Leave Management system",
+  "license": "ISC",
+  "author": "Shivam Jayara",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  }
+}
