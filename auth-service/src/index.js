@@ -3,10 +3,11 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
-import authRouter from './routes/auth.routes';
-import healthRouter from './routes/health.routes';
-import globalErrorHandler from './utils/globalErrorHandler';
-import pool from "./db/pool";
+import authRouter from './routes/auth.routes.js';
+import healthRouter from './routes/health.routes.js';
+import globalErrorHandler from './utils/globalErrorHandler.js';
+import pool from "./db/pool.js";
+import seed from "./db/seed.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -42,6 +43,7 @@ async function waitForDb(retries = 5, delay = 3000) {
 
 async function start() {
   await waitForDb();
+  await seed();
   app.listen(PORT, () => {
     console.log(`[${process.env.SERVICE_NAME}] Running on port ${PORT}`);
   });
