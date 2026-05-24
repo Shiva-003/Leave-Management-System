@@ -10,7 +10,7 @@ import pool from "./db/pool.js";
 import seed from "./db/seed.js";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Middlewares
 app.use(cors({ origin: process.env.ALLOWED_ORIGINS, credentials: true }));

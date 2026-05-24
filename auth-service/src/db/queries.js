@@ -1,6 +1,6 @@
 import pool from './pool.js';
 
-export async function findUserByEmail(email){
+export const findUserByEmail = async (email) => {
     const { rows } = await pool.query(
         `SELECT u.id, u.name, u.email, u.password_hash, u.role, u.manager_id, u.department,
         ARRAY_AGG(tm.employee_id) FILTER (WHERE tm.employee_id IS NOT NULL) AS team_members
@@ -15,7 +15,7 @@ export async function findUserByEmail(email){
 }
 
 
-export async function findUserById(id){
+export const findUserById = async (id) => {
     const { rows } = await pool.query(
         `SELECT u.id, u.name, u.email, u.role, u.manager_id, u.department,
         ARRAY_AGG(tm.employee_id) FILTER (WHERE tm.employee_id IS NOT NULL) AS team_members

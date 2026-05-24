@@ -3,10 +3,10 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
-import leaveRouter from "./routes/leave.routes";
-import healthRouter from './routes/health.routes';
-import globalErrorHandler from './utils/globalErrorHandler';
-import pool from "./db/pool";
+import leaveRouter from "./routes/leave.routes.js";
+import healthRouter from './routes/health.routes.js';
+import globalErrorHandler from './utils/globalErrorHandler.js';
+import pool from "./db/pool.js";
 
 const app = express();
 const PORT = process.env.PORT || 3002;
