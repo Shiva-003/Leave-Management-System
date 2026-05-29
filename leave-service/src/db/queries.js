@@ -209,7 +209,7 @@ export const approveLeaveRequest = async (leaveId, managerId) => {
         );
 
         const { rows: updated } = await client.query(
-            `UPDATE leave_requests SET status = 'Approved' WHERE id = $1 RETURNING id, leave_type, start_date, end_date, number_of_days, reason, status, applied_at`,
+            `UPDATE leave_requests SET status = 'Approved' WHERE id = $1 RETURNING id, user_id, user_name, leave_type, start_date, end_date, number_of_days, reason, status, applied_at`,
             [leaveId]
         );
 
@@ -245,7 +245,7 @@ export const rejectLeaveRequest = async (leaveId, managerId, reason) => {
 
         const { rows: updated } = await client.query(
             `UPDATE leave_requests SET status = 'Rejected', rejection_reason = $1 WHERE id = $2 
-             RETURNING id, leave_type, start_date, end_date, number_of_days, reason, status, rejection_reason, applied_at`,
+             RETURNING id, user_id, user_name, leave_type, start_date, end_date, number_of_days, reason, status, rejection_reason, applied_at`,
             [reason, leaveId]
         );
 

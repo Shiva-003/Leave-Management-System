@@ -1,10 +1,16 @@
 import { createLeaveRequest, getBalanceByType, hasOverlap, getLeaveBalancesByUserId, getLeaveRequestsByUser, cancelLeaveRequest } from "../db/queries.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
-
+import { publishMessage } from "../publisher.js";
 
 const VALID_LEAVE_TYPES = ['Casual', 'Sick', 'Privilege'];
 const VALID_STATUSES = ['Pending', 'Approved', 'Rejected'];
+
+// Routing key constants — format: leave.<event>.<recipient>
+const RK = {
+    APPLIED_LEAVE: 'leave.applied.manager',
+    CANCELLED_LEAVE: 'leave.cancelled.manager',
+};
 
 export const getLeaveBalance = async (req, res) => {
     const userId = req.user.id;
@@ -54,9 +60,7 @@ export const applyLeave = async (req, res) => {
         }
 
         const startStr = start.toISOString().split('T')[0];
-        console.log("startStr: ", startStr);
         const endStr = end.toISOString().split('T')[0];
-        console.log("endStr: ", endStr);
 
         const balance = await getBalanceByType(user.id, leaveType);
         if (!balance || balance.remaining < numberOfDays){
@@ -73,6 +77,12 @@ export const applyLeave = async (req, res) => {
         }
 
         const request = await createLeaveRequest(user.id, user.name, user.managerId, leaveType, startDate, endDate, numberOfDays, reason);
+
+        publishMessage(RK.APPLIED_LEAVE, {
+            type: 'LEAVE_APPLIED',
+            recipientId: user.managerId,
+            message: `${user.name} applied for ${leaveType} leave (${numberOfDays} day(s) from ${startStr} to ${endStr}. Awaiting your approval.)`
+        });
 
         return res.status(201).json(
             new ApiResponse(201, request, "Leave application submitted successfully.")
@@ -125,8 +135,18 @@ export const cancelLeave = async (req, res) => {
     try{
         const leaveId = req.params.leaveId;
         const userId = req.user.id;
-    
+        
         const updated = await cancelLeaveRequest(leaveId, userId);
+
+        const startStr = updated.start_date.toISOString().split('T')[0];
+        const endStr = updated.end_date.toISOString().split('T')[0];
+
+        publishMessage(RK.CANCELLED_LEAVE, {
+            type: 'LEAVE_CANCELLED',
+            recipientId: req.user.managerId,
+            message: `${req.user.name} has cancelled ${updated.leave_type} leave from ${startStr} to ${endStr}.`
+        });
+
         return res.status(200).json(
             new ApiResponse(200, updated, "Leave request cancelled successfully.")
         );

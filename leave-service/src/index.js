@@ -7,6 +7,7 @@ import leaveRouter from "./routes/leave.routes.js";
 import healthRouter from './routes/health.routes.js';
 import globalErrorHandler from './utils/globalErrorHandler.js';
 import pool from "./db/pool.js";
+import { connectPublisher } from "./publisher.js";
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -42,6 +43,9 @@ async function waitForDb(retries = 5, delay = 3000) {
 
 async function start() {
   await waitForDb();
+  connectPublisher().catch((err) => {
+    console.warn(`[${process.env.SERVICE_NAME}] RabbitMQ unavailable: `, err.message);
+  })
   app.listen(PORT, () => {
     console.log(`[${process.env.SERVICE_NAME}] Running on port ${PORT}`);
   });
