@@ -8,9 +8,10 @@ import healthRouter from './routes/health.routes.js';
 import globalErrorHandler from './utils/globalErrorHandler.js';
 // import pool from "./db/pool";
 import startConsumer from "./consumer.js";
+import ApiError from "./utils/ApiError.js";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3003;
 
 // Middlewares
 // app.use(cors({ origin: process.env.ALLOWED_ORIGINS, credentials: true }));
@@ -22,6 +23,10 @@ app.use(morgan('combined'));
 // Routes
 // app.use('/notifications', notificationRouter);
 app.use('/health', healthRouter);
+
+app.use((req, res) => {
+  throw new ApiError(404, 'Endpoint not found');
+});
 
 // Error Handler
 app.use(globalErrorHandler);

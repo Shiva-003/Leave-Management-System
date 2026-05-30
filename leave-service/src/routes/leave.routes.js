@@ -3,19 +3,23 @@ import authenticate from '../middleware/authentication.middleware.js';
 import authorize from '../middleware/authorize.middleware.js';
 import { applyLeave, cancelLeave, getLeaveBalance, getLeaveHistory } from '../controllers/employee.leave.controller.js';
 import { getTeamLeaves, approveLeave, rejectLeave } from '../controllers/manager.leave.controller.js';
+import { getHealthStatus } from '../controllers/health.controller.js';
 
-const leaveRouter = express.Router();
+const router = express.Router();
 
 // Employee routes
-leaveRouter.get('/balance', authenticate, authorize("Employee"), getLeaveBalance);
-leaveRouter.post('/apply', authenticate, authorize("Employee"), applyLeave);
-leaveRouter.get('/history', authenticate, authorize("Employee"), getLeaveHistory);
-leaveRouter.delete('/:leaveId/cancel', authenticate, authorize("Employee"), cancelLeave);
+router.get('/balance', authenticate, authorize("Employee"), getLeaveBalance);
+router.post('/apply', authenticate, authorize("Employee"), applyLeave);
+router.get('/history', authenticate, authorize("Employee"), getLeaveHistory);
+router.delete('/:leaveId/cancel', authenticate, authorize("Employee"), cancelLeave);
 
 
 // // Manager routes
-leaveRouter.get('/requests', authenticate, authorize("Manager"), getTeamLeaves);
-leaveRouter.post('/requests/:leaveId/approve', authenticate, authorize("Manager"), approveLeave);
-leaveRouter.post('/requests/:leaveId/reject', authenticate, authorize("Manager"), rejectLeave);
+router.get('/requests', authenticate, authorize("Manager"), getTeamLeaves);
+router.post('/requests/:leaveId/approve', authenticate, authorize("Manager"), approveLeave);
+router.post('/requests/:leaveId/reject', authenticate, authorize("Manager"), rejectLeave);
 
-export default leaveRouter;
+// health check
+router.get('/health', getHealthStatus);
+
+export default router;

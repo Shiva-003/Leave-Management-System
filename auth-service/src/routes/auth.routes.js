@@ -1,10 +1,14 @@
 import express from 'express';
 import { getUserDetails, login } from '../controllers/auth.controller.js';
+import { getHealthStatus } from '../controllers/health.controller.js';
 
-const authRouter = express.Router();
+const router = express.Router();
 
-authRouter.post('/login', login);
-authRouter.get('/me', getUserDetails);
+router.post('/login', login);
+router.get('/me', getUserDetails);
+
+// health check
+router.get('/health', getHealthStatus);
 
 
-export default authRouter;
+export default router;

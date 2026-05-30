@@ -3,11 +3,11 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
-import leaveRouter from "./routes/leave.routes.js";
-import healthRouter from './routes/health.routes.js';
+import router from "./routes/leave.routes.js";
 import globalErrorHandler from './utils/globalErrorHandler.js';
 import pool from "./db/pool.js";
 import { connectPublisher } from "./publisher.js";
+import ApiError from "./utils/ApiError.js";
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -20,8 +20,11 @@ app.use(cookieParser());
 app.use(morgan('combined'));
 
 // Routes
-app.use('/leave', leaveRouter);
-app.use('/health', healthRouter);
+app.use('/leave', router);
+
+app.use((req, res) => {
+  throw new ApiError(404, 'Endpoint not found');
+});
 
 // Error Handler
 app.use(globalErrorHandler);
