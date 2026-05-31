@@ -4,7 +4,7 @@ import ApiResponse from "../utils/ApiResponse.js";
 import { publishMessage } from "../publisher.js";
 
 const VALID_LEAVE_TYPES = ['Casual', 'Sick', 'Privilege'];
-const VALID_STATUSES = ['Pending', 'Approved', 'Rejected'];
+const VALID_STATUSES = ['Pending', 'Approved', 'Rejected', 'Cancelled'];
 
 // Routing key constants — format: leave.<event>.<recipient>
 const RK = {
@@ -17,7 +17,7 @@ export const getLeaveBalance = async (req, res) => {
     try {
         const leaveBalances = await getLeaveBalancesByUserId(userId);
         return res.status(200).json(
-            new ApiResponse(200, 'Leave balances retrieved successfully', leaveBalances)    
+            new ApiResponse(200, leaveBalances, 'Leave balances retrieved successfully')
         );
     } catch (err) {
         console.error(`[${process.env.SERVICE_NAME}] Error fetching leave balance:`, err.message);

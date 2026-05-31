@@ -27,7 +27,10 @@ export const login = async (req, res) => {
             role: user.role
         };
 
-        const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRY});
+        const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {
+            expiresIn: process.env.JWT_EXPIRY,
+            issuer: process.env.JWT_ISSUER || 'lms-issuer'
+        });
         
         return res.status(200).json(
             new ApiResponse(200, { token: token }, "Login successfull")

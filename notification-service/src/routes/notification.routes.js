@@ -1,7 +1,8 @@
 import express from 'express';
+import { getHealthStatus } from '../controllers/health.controller.js';
 
-const notificationRouter = express.Router();
+const router = express.Router();
 
-notificationRouter.get('/');
+router.get('/health', getHealthStatus);
 
-export default notificationRouter;
+export default router;

@@ -131,6 +131,8 @@ services:
       PORT: 3002
       SERVICE_NAME: 'leave-service'
       ALLOWED_ORIGINS: '*'
+      JWT_ISSUER: 'lms-issuer'
+      KONG_CONSUMER_USERNAME: 'lms-auth'
       DB_HOST: 'postgres'
       DB_DATABASE: 'lms_db'
       DB_USER: 'postgres'

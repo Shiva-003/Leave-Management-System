@@ -17,6 +17,19 @@ services:
         paths:
           - /leave
         strip_path: false
+    plugins:
+      - name: jwt
+        config:
+          key_claim_name: iss
+          claims_to_verify:
+            - exp
+
+consumers:
+  - username: lms-auth
+    jwt_secrets:
+      - key: lms-issuer
+        algorithm: HS256
+        secret: YFPcTxd3arPQZSL8bPLf5sjEVGIrkxEr22pQ5gbzkK0
 
 plugins:
   - name: cors

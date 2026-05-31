@@ -13,7 +13,7 @@ export const connectPublisher = async (retries=5, delay=4000) => {
             const connection = await amqp.connect(RABBITMQ_URL);
             channel = await connection.createChannel();
 
-            (await channel).assertExchange(EXCHANGE_NAME, EXCHANGE_TYPE, {durable: true });
+            await channel.assertExchange(EXCHANGE_NAME, EXCHANGE_TYPE, {durable: true });
 
             connection.on('error', (err)=>{
                 console.error(`[PUBLISHER] Connection error:`, err.message);

@@ -4,7 +4,7 @@ import os from "os";
 const CONSUL_HTTP_ADDR = process.env.CONSUL_HTTP_ADDR || "http://consul:8500";
 const SERVICE_NAME = process.env.SERVICE_NAME || "leave-service";
 const SERVICE_ID = `${SERVICE_NAME}-${os.hostname()}-${process.pid}-${Date.now()}`;
-const PORT = Number(process.env.PORT || 3001);
+const PORT = Number(process.env.PORT || 3002);
 
 const getContainerIp = () => {
   const nets = os.networkInterfaces();

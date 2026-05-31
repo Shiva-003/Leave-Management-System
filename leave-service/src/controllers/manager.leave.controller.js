@@ -1,4 +1,3 @@
-import pool from "../db/pool.js";
 import { getLeaveRequestsByManager, approveLeaveRequest, rejectLeaveRequest } from "../db/queries.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
