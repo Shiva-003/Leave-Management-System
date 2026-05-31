@@ -3,7 +3,7 @@ _transform: true
 
 services:
   - name: auth-service
-    url: http://auth-service:3001
+    url: http://auth-service.service.consul:3001
     routes:
       - name: auth
         paths:
@@ -11,9 +11,26 @@ services:
         strip_path: false
   
   - name: leave-service
-    url: http://leave-service:3002
+    url: http://leave-service.service.consul:3002
     routes:
       - name: leave
         paths:
           - /leave
         strip_path: false
+
+plugins:
+  - name: cors
+    config:
+      origins:
+      - '*'
+      methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+  
+  - name: rate-limiting
+    config:
+      hour: 100
+      policy: local
+  

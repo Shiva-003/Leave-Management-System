@@ -8,9 +8,11 @@ import globalErrorHandler from './utils/globalErrorHandler.js';
 import pool from "./db/pool.js";
 import seed from "./db/seed.js";
 import ApiError from "./utils/ApiError.js";
+import { registerServiceWithConsul, deregisterServiceFromConsul } from "./services/consul.service.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+let server;
 
 // Middlewares
 app.use(cors({ origin: process.env.ALLOWED_ORIGINS, credentials: true }));
@@ -47,10 +49,41 @@ async function waitForDb(retries = 5, delay = 3000) {
 async function start() {
   await waitForDb();
   await seed();
-  app.listen(PORT, () => {
+  server = app.listen(PORT, async () => {
     console.log(`[${process.env.SERVICE_NAME}] Running on port ${PORT}`);
+
+    try {
+      await registerServiceWithConsul();
+    } catch (err) {
+      console.error(`[${process.env.SERVICE_NAME}] Consul registration failed:`,err.message);
+      process.exitCode = 1;
+    }
   });
 }
+
+const shutdown = async (signal) => {
+  console.log(`[${process.env.SERVICE_NAME}] Received ${signal}, shutting down...`);
+
+  try {
+    await deregisterServiceFromConsul();
+  } catch (err) {
+    console.error(`[${process.env.SERVICE_NAME}] Consul deregistration failed:`,err.message);
+  }
+
+  if (server) {
+    server.close(() => {
+      process.exit(0);
+    });
+
+    setTimeout(() => process.exit(1), 5000).unref();
+  } else {
+    process.exit(0);
+  }
+}
+
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+
 
 start().catch((err) => {
   console.error(`[${process.env.SERVICE_NAME}] Fatal startup error:`, err.message);
