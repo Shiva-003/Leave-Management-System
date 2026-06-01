@@ -1,5 +1,6 @@
 import "dotenv/config";
 import os from "os";
+import logger from "../logger.js";
 
 const CONSUL_HTTP_ADDR = process.env.CONSUL_HTTP_ADDR || "http://consul:8500";
 const SERVICE_NAME = process.env.SERVICE_NAME || "auth-service";
@@ -51,7 +52,7 @@ export const registerServiceWithConsul = async () => {
     Tags: ["nodejs", "auth", "lms"],
     Check: {
       HTTP: healthUrl,
-      Interval: "10s",
+      Interval: "1m",
       Timeout: "2s"
     }
   };
@@ -61,9 +62,7 @@ export const registerServiceWithConsul = async () => {
     body: JSON.stringify(payload)
   });
 
-  console.log(
-    `[${SERVICE_NAME}] Registered with Consul at ${address}:${PORT}`
-  );
+  logger.info(`Registered with Consul at ${address}:${PORT}`);
 }
 
 export const deregisterServiceFromConsul = async () => {
@@ -71,5 +70,5 @@ export const deregisterServiceFromConsul = async () => {
     method: "PUT"
   });
 
-  console.log(`[${SERVICE_NAME}] Deregistered from Consul`);
+  logger.info(`Deregistered from Consul`);
 }

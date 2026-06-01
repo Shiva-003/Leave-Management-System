@@ -1,4 +1,5 @@
 import { Pool } from 'pg';
+import logger from '../logger.js';
 
 const pool = new Pool({
     host:   process.env.DB_HOST,
@@ -9,11 +10,11 @@ const pool = new Pool({
 })
 
 pool.on('connect', ()=>{
-    console.log(`[${process.env.SERVICE_NAME}] New client connected to PostgreSQL`)
+    // logger.info(`New client connected to PostgreSQL`);
 });
 
 pool.on('error', (err) => {
-    console.error(`[${process.env.SERVICE_NAME}] Unexpected pool error:`, err.message);
+    logger.error(`Unexpected pool error:`, err.message);
 })
 
 export default pool;

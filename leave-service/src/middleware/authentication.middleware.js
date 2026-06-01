@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { getUserById } from '../db/queries.js';
 import ApiError from '../utils/ApiError.js';
+import logger from '../logger.js';
 
 const authenticate = async (req, res, next) => {
     const expectedConsumer = process.env.KONG_CONSUMER_USERNAME || 'lms-auth';
@@ -40,7 +41,7 @@ const authenticate = async (req, res, next) => {
         };
         next();
     } catch (err) {
-        console.error('Token verification failed:', err.message);
+        logger.error('Token verification failed:', err.message);
         throw new ApiError(401, 'Unauthorized Request');
     }
 };

@@ -1,4 +1,5 @@
 import amqp from 'amqplib';
+import logger from './logger.js';
 
 const RABBITMQ_URL    = process.env.RABBITMQ_URL || 'amqp://localhost';
 const EXCHANGE_NAME   = 'leave.events';
@@ -16,23 +17,23 @@ export const connectPublisher = async (retries=5, delay=4000) => {
             await channel.assertExchange(EXCHANGE_NAME, EXCHANGE_TYPE, {durable: true });
 
             connection.on('error', (err)=>{
-                console.error(`[PUBLISHER] Connection error:`, err.message);
+                logger.error(`[PUBLISHER] Connection error:`, err.message);
                 channel = null;
             });
 
             connection.on('close', ()=>{
-                console.warn('[PUBLISHER] Connection closed');
+                logger.warn('[PUBLISHER] Connection closed');
                 channel = null;
             });
 
-            console.log(`[PUBLISHER] Connected to RabbitMQ — exchange: "${EXCHANGE_NAME}" (${EXCHANGE_TYPE})`);
+            logger.info(`[PUBLISHER] Connected to RabbitMQ — exchange: "${EXCHANGE_NAME}" (${EXCHANGE_TYPE})`);
             return;
         }catch (err) {
-            console.warn(`[PUBLISHER] RabbitMQ not ready (attempt ${i}/${retries}): ${err.message}`);
+            logger.warn(`[PUBLISHER] RabbitMQ not ready (attempt ${i}/${retries}): ${err.message}`);
             if (i < retries) await new Promise((r) => setTimeout(r, delay));
         }
     }
-    console.error('[PUBLISHER] Unable to connect to RabbitMQ');
+    logger.error('[PUBLISHER] Unable to connect to RabbitMQ');
 }
 
 export const publishMessage = (routingKey, notification) => {
@@ -44,14 +45,9 @@ export const publishMessage = (routingKey, notification) => {
 
     if(channel){
         try{
-            channel.publish(
-                EXCHANGE_NAME,
-                routingKey,
-                Buffer.from(payload),
-                { persistent: true }
-            );
+            channel.publish(EXCHANGE_NAME, routingKey, Buffer.from(payload), { persistent: true });
         } catch(err){
-            console.error('[PUBLISHER] Failed to publish: ', err.message);
+            logger.error('[PUBLISHER] Failed to publish: ', err.message);
         }
     }
 }

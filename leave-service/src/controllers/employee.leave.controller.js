@@ -2,6 +2,7 @@ import { createLeaveRequest, getBalanceByType, hasOverlap, getLeaveBalancesByUse
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { publishMessage } from "../publisher.js";
+import logger from "../logger.js";
 
 const VALID_LEAVE_TYPES = ['Casual', 'Sick', 'Privilege'];
 const VALID_STATUSES = ['Pending', 'Approved', 'Rejected', 'Cancelled'];
@@ -20,7 +21,7 @@ export const getLeaveBalance = async (req, res) => {
             new ApiResponse(200, leaveBalances, 'Leave balances retrieved successfully')
         );
     } catch (err) {
-        console.error(`[${process.env.SERVICE_NAME}] Error fetching leave balance:`, err.message);
+        logger.error(`Error fetching leave balance:`, err.message);
         throw err;
     }
 };
@@ -88,7 +89,7 @@ export const applyLeave = async (req, res) => {
             new ApiResponse(201, request, "Leave application submitted successfully.")
         );
     } catch(err){
-        console.log(`[${process.env.SERVICE_NAME}] Error while applying leave: `, err.message);
+        logger.error(`Error while applying leave: `, err.message);
         throw err;
     }
 }

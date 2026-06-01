@@ -8,6 +8,7 @@ import globalErrorHandler from './utils/globalErrorHandler.js';
 import pool from "./db/pool.js";
 import { connectPublisher } from "./publisher.js";
 import ApiError from "./utils/ApiError.js";
+import logger from './logger.js';
 import { registerServiceWithConsul, deregisterServiceFromConsul } from "./services/consul.service.js";
 
 const app = express();
@@ -19,7 +20,10 @@ app.use(cors({ origin: process.env.ALLOWED_ORIGINS, credentials: true }));
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ limit: "16kb", extended: true }));
 app.use(cookieParser());
-app.use(morgan('combined'));
+app.use(morgan('combined', { 
+  stream: { write: (msg) => logger.info(msg.trim()) } ,
+  skip: (req) => req.path.includes('/health')
+}));
 
 // Routes
 app.use('/leave', router);
@@ -36,10 +40,10 @@ async function waitForDb(retries = 5, delay = 3000) {
   for (let i = 1; i <= retries; i++) {
     try {
       await pool.query('SELECT 1');
-      console.log(`[${process.env.SERVICE_NAME}] PostgreSQL is ready.`);
+      logger.info('PostgreSQL is ready.');
       return;
     } catch (err) {
-      console.warn(`[${process.env.SERVICE_NAME}] DB not ready (attempt ${i}/${retries}): ${err.message}`);
+      logger.warn(`DB not ready (attempt ${i}/${retries}): ${err.message}`);
       if (i < retries) await new Promise((r) => setTimeout(r, delay));
     }
   }
@@ -49,27 +53,27 @@ async function waitForDb(retries = 5, delay = 3000) {
 async function start() {
   await waitForDb();
   connectPublisher().catch((err) => {
-    console.warn(`[${process.env.SERVICE_NAME}] RabbitMQ unavailable: `, err.message);
+    logger.warn(`RabbitMQ unavailable: ${err.message}`);
   })
   server = app.listen(PORT, async () => {
-    console.log(`[${process.env.SERVICE_NAME}] Running on port ${PORT}`);
+    logger.info(`Running on port ${PORT}`);
 
     try {
       await registerServiceWithConsul();
     } catch (err) {
-      console.error(`[${process.env.SERVICE_NAME}] Consul registration failed:`,err.message);
+      logger.error('Consul registration failed', { error: err.message });
       process.exitCode = 1;
     }
   });
 }
   
 const shutdown = async (signal) => {
-  console.log(`[${process.env.SERVICE_NAME}] Received ${signal}, shutting down...`);
+  logger.info(`Received ${signal}, shutting down...`);
 
   try {
     await deregisterServiceFromConsul();
   } catch (err) {
-    console.error(`[${process.env.SERVICE_NAME}] Consul deregistration failed:`,err.message);
+    logger.error('Consul deregistration failed', { error: err.message });
   }
 
   if (server) {
@@ -87,6 +91,7 @@ process.on("SIGINT", () => shutdown("SIGINT"));
 process.on("SIGTERM", () => shutdown("SIGTERM"));
 
 start().catch((err) => {
-  console.error(`[${process.env.SERVICE_NAME}] Fatal startup error:`, err.message);
+  logger.error('Fatal startup error', { error: err.message });
+  process.exit(1);
   process.exit(1);
 });

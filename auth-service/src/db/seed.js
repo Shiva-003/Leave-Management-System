@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import pool from './pool.js';
+import logger from '../logger.js';
 
 const USERS = [
     {id: 'mgr1', name:'Shivam Jayara', email: 'shivam@company.com', role: 'Manager', managerId: null, department: 'Engineering'},
@@ -22,11 +23,11 @@ async function seed() {
     try{
         const { rows } = await client.query('SELECT COUNT(*)::int AS count FROM users');
         if (rows[0].count > 0){
-            console.log('[SEED] Users already exists - skipping seed.');
+            logger.info('[SEED] Users already exists - skipping seed.');
             return;
         }
 
-        console.log('[SEED] Seeding database with predefined users');
+        logger.info('[SEED] Seeding database with predefined users');
         const passwordHash = await bcrypt.hash('password123', 10);
 
         await client.query('BEGIN');
@@ -59,11 +60,11 @@ async function seed() {
         }
 
         await client.query('COMMIT');
-        console.log('[SEED] Database seeded successfully.');
-        console.log('[SEED] Password for all users: password123')
+        logger.info('[SEED] Database seeded successfully.');
+        logger.info('[SEED] Password for all users: password123')
     } catch (err) {
         await client.query('ROLLBACK');
-        console.log('[SEED] Seeding failed: ', err.message);
+        logger.error('[SEED] Seeding failed: ', err.message);
         throw err;
     } finally {
         client.release();

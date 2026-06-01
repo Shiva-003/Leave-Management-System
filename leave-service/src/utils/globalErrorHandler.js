@@ -1,9 +1,10 @@
 import ApiError from "./ApiError.js";
+import logger from "../logger.js";
 
 const globalErrorHandler = (error, req, res, next) => {
   if (!error) return;
 
-  console.log(`[${process.env.SERVICE_NAME}] error message`, error.message);
+  logger.error(error.message, { path: req.path, method: req.method, stack: error.stack });
   
   if (!(error instanceof ApiError)) {
     return res

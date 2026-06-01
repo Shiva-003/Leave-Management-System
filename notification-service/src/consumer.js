@@ -1,4 +1,5 @@
 import amqp from 'amqplib';
+import logger from './logger.js';
 
 const RABBITMQ_URL = process.env.RABBITMQ_URL || 'amqp://localhost';
 const EXCHANGE_NAME = 'leave.events';
@@ -26,7 +27,7 @@ const startConsumer = async (retries=5, delay=4000) => {
             for (const q of QUEUES){
                 await channel.assertQueue(q.name, {durable: true});
                 await channel.bindQueue(q.name, EXCHANGE_NAME, q.bindingKey);
-                console.log(`[${process.env.SERVICE_NAME}] Queue "${q.name}" bound to exchange "${EXCHANGE_NAME}" with key "${q.bindingKey}"`);
+                logger.info(`Queue "${q.name}" bound to exchange "${EXCHANGE_NAME}" with key "${q.bindingKey}"`);
             }
             
             channel.prefetch(1);
@@ -37,22 +38,22 @@ const startConsumer = async (retries=5, delay=4000) => {
     
                     try{
                         const notification = JSON.parse(msg.content.toString());
-                        console.log(`[${process.env.SERVICE_NAME}] [${notification.routingKey}] ${notification.recipientId} | ${notification.message}`);
+                        logger.info(`[${notification.routingKey}] Recipient: ${notification.recipientId} | ${notification.message}`);
                         channel.ack(msg);
                     }catch(err){
-                        console.error(`[CONSUMER] Failed to process message from "${q.name}":`, err.message);
+                        logger.error(`[CONSUMER] Failed to process message from "${q.name}":`, err.message);
                         channel.nack(msg, false, false);
                     }
                 })
 
-                console.log(`[CONSUMER] Listening on queue: "${q.name}"`);
+                logger.info(`[CONSUMER] Listening on queue: "${q.name}"`);
             }
 
-            connection.on('error', (err) => console.error('[CONSUMER] Connection error:', err.message));
-            connection.on('close', ()    => console.warn('[CONSUMER] Connection closed'));
+            connection.on('error', (err) => logger.error('[CONSUMER] Connection error:', err.message));
+            connection.on('close', ()    => logger.warn('[CONSUMER] Connection closed'));
             return;
         }catch(err){
-            console.warn(`[CONSUMER] RabbitMQ not ready (attempt ${i}/${retries}): ${err.message}`);
+            logger.warn(`[CONSUMER] RabbitMQ not ready (attempt ${i}/${retries}): ${err.message}`);
             if (i < retries) await new Promise((r) => setTimeout(r, delay));
         }
     }
