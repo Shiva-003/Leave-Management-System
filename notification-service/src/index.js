@@ -31,23 +31,24 @@ app.use((req, res) => {
 app.use(globalErrorHandler);
 
 async function start() {
-  server = app.listen(PORT, () => {
+  server = app.listen(PORT, async () => {
     logger.info(`Running on port ${PORT}`);
   });
   await startConsumer();
 }
-
+  
 const shutdown = async (signal) => {
   logger.info(`Received ${signal}, shutting down...`);
   if (server) {
     server.close(() => {
       process.exit(0);
     });
+
     setTimeout(() => process.exit(1), 5000).unref();
   } else {
     process.exit(0);
   }
-};
+}
 
 process.on("SIGINT", () => shutdown("SIGINT"));
 process.on("SIGTERM", () => shutdown("SIGTERM"));

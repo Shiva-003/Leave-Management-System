@@ -93,5 +93,4 @@ process.on("SIGTERM", () => shutdown("SIGTERM"));
 start().catch((err) => {
   logger.error('Fatal startup error', { error: err.message });
   process.exit(1);
-  process.exit(1);
 });

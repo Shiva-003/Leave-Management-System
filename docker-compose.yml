@@ -116,12 +116,16 @@ services:
       JWT_EXPIRY: '8h'
       LOGSTASH_HOST: logstash
       LOGSTASH_PORT: 5044
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://jaeger:4318/v1/traces'
+      OTEL_TRACES_SAMPLER: always_on
 
     depends_on:
       consul:
         condition: service_healthy
       postgres:
         condition: service_healthy
+      jaeger:
+        condition: service_started
     networks:
       - lms-network
   
@@ -143,6 +147,8 @@ services:
       RABBITMQ_URL: 'amqp://user:password@rabbitmq:5672'
       LOGSTASH_HOST: logstash
       LOGSTASH_PORT: 5044
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://jaeger:4318/v1/traces'
+      OTEL_TRACES_SAMPLER: always_on
     depends_on:
       consul:
         condition: service_healthy
@@ -150,6 +156,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      jaeger:
+        condition: service_started
     networks:
       - lms-network
 
@@ -169,11 +177,15 @@ services:
       RABBITMQ_URL: 'amqp://user:password@rabbitmq:5672'
       LOGSTASH_HOST: logstash
       LOGSTASH_PORT: 5044
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://jaeger:4318/v1/traces'
+      OTEL_TRACES_SAMPLER: always_on
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      jaeger:
+        condition: service_started
     networks:
       - lms-network
 
@@ -222,6 +234,18 @@ services:
     networks:
       - lms-network
 
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: lms-jaeger
+    restart: unless-stopped
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"   # Jaeger UI
+      - "4317:4317"     # OTLP gRPC
+      - "4318:4318"     # OTLP HTTP (used by services + Kong)
+    networks:
+      - lms-network
 
 volumes:
   postgres_data:
