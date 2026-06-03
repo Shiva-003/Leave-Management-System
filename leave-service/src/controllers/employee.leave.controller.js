@@ -13,6 +13,25 @@ const RK = {
     CANCELLED_LEAVE: 'leave.cancelled.manager',
 };
 
+const countWorkingDays = (startDate, endDate) => {
+    let count = 0;
+    const current = new Date(startDate);
+    current.setHours(0, 0, 0, 0);
+
+    const end = new Date(endDate);
+    end.setHours(0, 0, 0, 0);
+
+    while (current <= end) {
+        const day = current.getDay(); // 0 = Sunday, 6 = Saturday
+        if (day !== 0 && day !== 6) {
+            count++;
+        }
+        current.setDate(current.getDate() + 1);
+    }
+
+    return count;
+};
+
 export const getLeaveBalance = async (req, res) => {
     const userId = req.user.id;
     try {
@@ -29,9 +48,9 @@ export const getLeaveBalance = async (req, res) => {
 export const applyLeave = async (req, res) => {
     try {
         const user = req.user;
-        const { leaveType, startDate, endDate, numberOfDays, reason } = req.body;
+        const { leaveType, startDate, endDate, reason } = req.body;
 
-        if(!leaveType || !startDate || !endDate || !numberOfDays) {
+        if(!leaveType || !startDate || !endDate) {
             throw new ApiError(400, 'Missing required details');
         }
 
@@ -56,8 +75,10 @@ export const applyLeave = async (req, res) => {
             throw new ApiError(400, 'End date cannot be before start date');
         }
 
+        const numberOfDays = countWorkingDays(start, end);
+
         if (numberOfDays <= 0) {
-            throw new ApiError(400, 'Number of days must be greater than zero');
+            throw new ApiError(400, 'Selected dates do not include any working days');
         }
 
         const startStr = start.toISOString().split('T')[0];
