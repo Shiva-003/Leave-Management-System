@@ -6,7 +6,7 @@ import ApiResponse from '../utils/ApiResponse.js';
 
 export const login = async (req, res) => {
     try{
-        const {email, password} = req.body;
+        const {email, password} = req.body || {};
 
         if (!email || !password){
             throw new ApiError(400, "Missing required details");
@@ -33,7 +33,7 @@ export const login = async (req, res) => {
         });
         
         return res.status(200).json(
-            new ApiResponse(200, { token: token }, "Login successfull")
+            new ApiResponse(200, { token: token }, "Login successful")
         );
     } catch(err){
         throw err

@@ -11,6 +11,9 @@ const RK = {
     REJECTED_LEAVE: 'leave.rejected.employee'
 }
 
+const isUUID = (str) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
+
 export const getTeamLeaves = async (req, res) => {
     try {
         const { status, employeeId, startDate, endDate } = req.query;
@@ -31,6 +34,10 @@ export const getTeamLeaves = async (req, res) => {
 
 export const approveLeave = async (req, res) => {
     try{
+        if (!isUUID(req.params.leaveId)) {
+            throw new ApiError(400, "Invalid leave ID format.");
+        }
+
         const updated = await approveLeaveRequest(req.params.leaveId, req.user.id);
 
         const startStr = updated.start_date.toISOString().split('T')[0];
@@ -52,7 +59,11 @@ export const approveLeave = async (req, res) => {
 
 export const rejectLeave = async (req, res) => {
     try{
-        const { reason } = req.body;
+        if (!isUUID(req.params.leaveId)) {
+            throw new ApiError(400, "Invalid leave ID format.");
+        }
+        
+        const { reason } = req.body || {};
         if (!reason || reason.trim() === '') {
             throw new ApiError(400, 'Rejection reason is required.');
         }

@@ -32,6 +32,9 @@ const countWorkingDays = (startDate, endDate) => {
     return count;
 };
 
+const isUUID = (str) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
+
 export const getLeaveBalance = async (req, res) => {
     const userId = req.user.id;
     try {
@@ -48,7 +51,7 @@ export const getLeaveBalance = async (req, res) => {
 export const applyLeave = async (req, res) => {
     try {
         const user = req.user;
-        const { leaveType, startDate, endDate, reason } = req.body;
+        const { leaveType, startDate, endDate, reason } = req.body || {};
 
         if(!leaveType || !startDate || !endDate) {
             throw new ApiError(400, 'Missing required details');
@@ -157,6 +160,10 @@ export const cancelLeave = async (req, res) => {
     try{
         const leaveId = req.params.leaveId;
         const userId = req.user.id;
+
+        if (!isUUID(leaveId)) {
+            throw new ApiError(400, "Invalid leave ID format.");
+        }
         
         const updated = await cancelLeaveRequest(leaveId, userId);
 
