@@ -140,6 +140,7 @@ The collection covers the full flow — login, applying for leave, manager appro
 
 ## Video Recording
 
- **[Insert video recording link here]**
+Please find the video recording link in the zip folder:-
+ **[Zip folder link](https://drive.google.com/file/d/1mFEwyw0NzM2FugnHUu4laaZn7P6YZmOB/view?usp=drive_link)**
 
 
